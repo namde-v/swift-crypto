@@ -114,6 +114,10 @@ let package = Package(
                 .define("WIN32_LEAN_AND_MEAN", .when(platforms: [Platform.windows])),
                 .define("NOMINMAX", .when(platforms: [Platform.windows])),
                 .define("_CRT_SECURE_NO_WARNINGS", .when(platforms: [Platform.windows])),
+                // MSVC 14.51+ (VS 2026) requires Clang 20+, but Swift 6.2 bundles
+                // Clang 19. This suppresses the STL1000 version check for the
+                // BoringSSL C++ sources (downstream fork addition).
+                .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [Platform.windows])),
                 /*
                  * These defines are required on Wasm/WASI, to disable use of pthread.
                  */
@@ -122,6 +126,10 @@ let package = Package(
                     .when(platforms: [Platform.wasi])
                 ),
                 .define("OPENSSL_NO_ASM", .when(platforms: [Platform.wasi])),
+            ],
+            cxxSettings: [
+                // See above: MSVC 14.51+ STL version check vs Swift's Clang 19.
+                .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [Platform.windows])),
             ]
         ),
         .target(
